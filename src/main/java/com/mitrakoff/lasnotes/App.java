@@ -8,21 +8,58 @@ import com.vladsch.flexmark.util.data.MutableDataSet;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.*;
+import org.eclipse.swt.widgets.*;
 
 import java.util.Arrays;
+
+import static org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter;
 
 // for macOS: run with -XstartOnFirstThread JVM option
 public class App {
     public static void main(String [] args) {
-        String html = renderHtml();
+        Display display = new Display ();
+        final Shell shell = new Shell (display);
+        shell.setText("Las Notes");
+        final Sash sash = new Sash (shell, SWT.VERTICAL);
 
-        Display display = new Display();
-        Shell shell = new Shell(display);
-        shell.setText("Snippet 136");
-        shell.setLayout(new FillLayout());
+        final FormLayout form = new FormLayout ();
+        shell.setLayout (form);
+
+        final int limit = 20, percent = 50;
+        final FormData sashData = new FormData ();
+        sashData.left = new FormAttachment (percent, 0);
+        sashData.top = new FormAttachment (0, 0);
+        sashData.bottom = new FormAttachment (300, 0);
+        sash.setLayoutData (sashData);
+        sash.addListener (SWT.Selection, e -> {
+            Rectangle sashRect = sash.getBounds ();
+            Rectangle shellRect = shell.getClientArea ();
+            int right = shellRect.width - sashRect.width - limit;
+            e.x = Math.max (Math.min (e.x, right), limit);
+            if (e.x != sashRect.x)  {
+                sashData.left = new FormAttachment (0, e.x);
+                shell.layout ();
+            }
+        });
+
+        FormData button1Data = new FormData ();
+        button1Data.left = new FormAttachment (0, 0);
+        button1Data.right = new FormAttachment (sash, 0);
+        button1Data.top = new FormAttachment (0, 0);
+        button1Data.bottom = new FormAttachment (100, 0);
+
+
+        FormData button2Data = new FormData ();
+        button2Data.left = new FormAttachment (sash, 0);
+        button2Data.right = new FormAttachment (100, 0);
+        button2Data.top = new FormAttachment (0, 0);
+        button2Data.bottom = new FormAttachment(100, 0);
+
+        // browser
         Browser browser;
         try {
             browser = new Browser(shell, SWT.NONE);
@@ -31,77 +68,27 @@ public class App {
             display.dispose();
             return;
         }
-        browser.setText(html);
-        shell.open();
-        while (!shell.isDisposed()) {
-            if (!display.readAndDispatch())
-                display.sleep();
+        browser.setLayoutData (button2Data);
+
+        // text-multiline
+        Text text = new Text(shell, SWT.MULTI | SWT.BORDER);
+        text.addModifyListener(e -> browser.setText(renderHtml(text.getText())));
+        text.setLayoutData(button1Data);
+
+        shell.pack ();
+        shell.open ();
+        while (!shell.isDisposed ()) {
+            if (!display.readAndDispatch ()) display.sleep ();
         }
-        display.dispose();
+        display.dispose ();
     }
 
-    public static String renderHtml() {
+    public static String renderHtml(String s) {
         MutableDataSet options = new MutableDataSet();
         options.set(Parser.EXTENSIONS, Arrays.asList(TablesExtension.create(), StrikethroughExtension.create()));
 
         Parser parser = Parser.builder(options).build();
         HtmlRenderer renderer = HtmlRenderer.builder(options).build();
-
-        var s = """
-                # Java: Simple Http client
-                
-                ```java
-                import java.net.URI;
-                import java.net.URLEncoder;
-                import java.net.http.*;
-                import java.nio.charset.StandardCharsets;
-                
-                public String makeHttpRequest(String url) throws Exception {
-                    final var client = HttpClient.newHttpClient();
-                    final var request = HttpRequest.newBuilder(URI.create(url)).build();
-                    final var reply = client.send(request, HttpResponse.BodyHandlers.ofString());
-                    client.close();
-                
-                    return reply.body();
-                }
-                ```
-                Usage:
-                ```java
-                final var key = "hello world";
-                final var keyEncoded = URLEncoder.encode(key, StandardCharsets.UTF_8).replaceAll("\\\\+", "%20");
-                makeHttpRequest("http://mitrakoff.com:9090/lingo/key/en-GB/" + keyEncoded);
-                ```
-                
-                # C# global hotkeys
-                ```cs
-                protected override bool ProcessCmdKey(ref Message message, Keys keys) {
-                    switch (keys) {
-                        case Keys.B | Keys.Control | Keys.Alt | Keys.Shift:
-                            // ... Process Shift+Ctrl+Alt+B ...
-                            return true; // signal that we've processed this key
-                    }
-                
-                    return base.ProcessCmdKey(ref message, keys);
-                }
-                ```
-                [Link](https://stackoverflow.com/a/14982579/2212849)
-                
-                # Login to Docker
-                ```yml
-                - name: registry
-                  type: string
-                  default: 'Docker-Artifactory-service-connection'
-                ...
-                steps:
-                  - task: Docker@2
-                    displayName: 'Docker login'
-                    inputs:
-                      containerRegistry: '${{ parameters.registry }}'
-                      command: 'login'
-                    condition: or(and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main')), eq(variables['PrismaScan'],'true'), false)
-                ```
-                
-                """;
         final var html = renderer.render(parser.parse(s));
 
         // https://highlightjs.org/demo
