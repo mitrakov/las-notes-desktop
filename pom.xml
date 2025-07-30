@@ -1,0 +1,25 @@
+<project xmlns="http://maven.apache.org/POM/4.1.0" root="true">
+    <modelVersion>4.1.0</modelVersion>
+
+    <groupId>com.mitrakoff</groupId>
+    <artifactId>las-notes</artifactId>
+    <version>1.0.0</version>
+
+    <properties>
+        <maven.compiler.release>21</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.eclipse.platform</groupId>
+            <artifactId>org.eclipse.swt.cocoa.macosx.x86_64</artifactId>
+            <version>3.130.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vladsch.flexmark</groupId>
+            <artifactId>flexmark-all</artifactId>
+            <version>0.64.8</version>
+        </dependency>
+    </dependencies>
+</project>
