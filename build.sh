@@ -22,6 +22,6 @@ jpackage \
   --mac-app-category "public.app-category.utilities" \
   --jlink-options "--strip-debug --no-header-files --no-man-pages" \
   --add-modules ALL-MODULE-PATH \
-  --verbose
-  #--mac-sign \
-  #--mac-signing-key-user-name "Developer ID Application: Artem Mitrakov (UUK2LMKK3C)" \
+  --verbose \
+  --mac-sign \
+  --mac-signing-key-user-name "Developer ID Application: Artem Mitrakov (UUK2LMKK3C)" \
