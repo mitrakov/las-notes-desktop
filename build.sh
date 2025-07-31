@@ -17,11 +17,11 @@ jpackage \
   --vendor "Artem Mitrakov" \
   --copyright "Copyright 2025 Artem Mitrakov (mitrakov-artem@yandex.ru)" \
   --icon AppIcon.icns \
+  --jlink-options "--strip-debug --no-header-files --no-man-pages" \
+  --add-modules ALL-MODULE-PATH \
   --mac-package-identifier com.mitrakoff.lasnotes.desktop \
   --mac-package-name "Las Notes" \
   --mac-app-category "public.app-category.utilities" \
-  --jlink-options "--strip-debug --no-header-files --no-man-pages" \
-  --add-modules ALL-MODULE-PATH \
-  --verbose \
   --mac-sign \
   --mac-signing-key-user-name "Developer ID Application: Artem Mitrakov (UUK2LMKK3C)" \
+  --verbose \

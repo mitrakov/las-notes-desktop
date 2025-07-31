@@ -15,6 +15,8 @@ jpackage `
   --vendor "Artem Mitrakov" `
   --copyright "Copyright 2025 Artem Mitrakov (mitrakov-artem@yandex.ru)" `
   --icon AppIcon.ico `
+  --jlink-options "--strip-debug --no-header-files --no-man-pages" `
+  --add-modules ALL-MODULE-PATH `
   --win-dir-chooser `
   --win-help-url "https://lasnotes.com" `
   --win-update-url "https://lasnotes.com" `
@@ -22,8 +24,6 @@ jpackage `
   --win-menu-group "Las Notes" `
   --win-shortcut-prompt `
   --win-upgrade-uuid "39854e34-e0e9-4887-8c3d-42d716a68126" `
-  --jlink-options "--strip-debug --no-header-files --no-man-pages" `
-  --add-modules ALL-MODULE-PATH `
   --verbose `
 
 echo "Sign the installer file"
