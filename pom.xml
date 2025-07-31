@@ -1,5 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.1.0" root="true">
-    <modelVersion>4.1.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+    <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.mitrakoff</groupId>
     <artifactId>las-notes</artifactId>
@@ -13,7 +13,8 @@
     <dependencies>
         <dependency>
             <groupId>org.eclipse.platform</groupId>
-            <artifactId>org.eclipse.swt.cocoa.macosx.x86_64</artifactId>
+<!--            <artifactId>org.eclipse.swt.cocoa.macosx.x86_64</artifactId>-->
+            <artifactId>org.eclipse.swt.win32.win32.x86_64</artifactId>
             <version>3.130.0</version>
         </dependency>
         <dependency>
