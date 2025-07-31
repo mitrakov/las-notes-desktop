@@ -15,7 +15,7 @@ public class MdRenderer {
     private static final HtmlRenderer renderer = HtmlRenderer.builder(options).build();
 
     public static String makeJsFromMd(String md) {
-        var html = renderer.render(parser.parse(md)).replace("`", "\\`");
+        var html = renderer.render(parser.parse(md)).replace("`", "\\`").replace("\\", "\\\\");
         return String.format("document.getElementById('dc').innerHTML=`%s`; document.querySelectorAll('pre code').forEach((e)=>{hljs.highlightElement(e);});", html);
     }
 }
