@@ -19,7 +19,30 @@ import java.util.Arrays;
 import static org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter;
 
 // for macOS: run with -XstartOnFirstThread JVM option
+// https://highlightjs.org/demo
 public class App {
+    static String basicHtml = """
+            <!DOCTYPE html>
+            <html>
+            <head>
+            <title>Las Notes</title>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/stackoverflow-light.min.css">
+              <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+              <script>
+                document.addEventListener('DOMContentLoaded', (event) => {
+                  document.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                  });
+                });
+              </script>
+            </head>
+            <body>
+                <div id="dynamicContent"/>
+            </body>
+            </html>
+          """;
+
+
     public static void main(String [] args) {
         Display display = new Display ();
         final Shell shell = new Shell (display);
@@ -68,11 +91,17 @@ public class App {
             display.dispose();
             return;
         }
+        browser.setText(basicHtml);
         browser.setLayoutData (button2Data);
 
         // text-multiline
         Text text = new Text(shell, SWT.MULTI | SWT.BORDER);
-        text.addModifyListener(e -> browser.setText(renderHtml(text.getText())));
+        text.addModifyListener(e -> {
+            var newHtml = renderHtml(text.getText());
+            updateContent(browser, newHtml);
+            //browser.setText(renderHtml(text.getText()));
+
+        });
         text.setLayoutData(button1Data);
 
         shell.pack ();
@@ -83,6 +112,24 @@ public class App {
         display.dispose ();
     }
 
+    private static void updateContent(Browser browser, String newContentHtml) {
+        //String newContentHtml = getDynamicContentHtml(false); // Get content without highlight
+        // Escape single quotes for JavaScript string literal
+        String escapedContent = newContentHtml.replace("`", "\\`");
+
+        // Construct the JavaScript to update the innerHTML of the div
+        String js = "document.getElementById('dynamicContent').innerHTML = `" + escapedContent + "`;";
+        System.out.println(js);
+
+        // Execute the JavaScript in the browser context
+        js += """
+                document.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                  });
+                """;
+        browser.execute(js);
+    }
+
     public static String renderHtml(String s) {
         MutableDataSet options = new MutableDataSet();
         options.set(Parser.EXTENSIONS, Arrays.asList(TablesExtension.create(), StrikethroughExtension.create()));
@@ -91,18 +138,6 @@ public class App {
         HtmlRenderer renderer = HtmlRenderer.builder(options).build();
         final var html = renderer.render(parser.parse(s));
 
-        // https://highlightjs.org/demo
-        final var highlightJs = """
-          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/stackoverflow-light.min.css">
-          <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-          <script>
-            document.addEventListener('DOMContentLoaded', (event) => {
-              document.querySelectorAll('pre code').forEach((block) => {
-                hljs.highlightElement(block);
-              });
-            });
-          </script>
-        """;
-        return highlightJs + html;
+        return html;
     }
 }
