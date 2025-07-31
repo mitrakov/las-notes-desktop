@@ -1,48 +1,14 @@
 package com.mitrakoff.lasnotes;
 
-import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension;
-import com.vladsch.flexmark.ext.tables.TablesExtension;
-import com.vladsch.flexmark.html.HtmlRenderer;
-import com.vladsch.flexmark.parser.Parser;
-import com.vladsch.flexmark.util.data.MutableDataSet;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 
-import java.util.Arrays;
-
-import static org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter;
-
 // for macOS: run with -XstartOnFirstThread JVM option
 // https://highlightjs.org/demo
 public class App {
-    static String basicHtml = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-            <title>Las Notes</title>
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/stackoverflow-light.min.css">
-              <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-              <script>
-                document.addEventListener('DOMContentLoaded', (event) => {
-                  document.querySelectorAll('pre code').forEach((block) => {
-                    hljs.highlightElement(block);
-                  });
-                });
-              </script>
-            </head>
-            <body>
-                <div id="dynamicContent"/>
-            </body>
-            </html>
-          """;
-
-
     public static void main(String [] args) {
         Display display = new Display ();
         final Shell shell = new Shell (display);
@@ -75,7 +41,6 @@ public class App {
         button1Data.top = new FormAttachment (0, 0);
         button1Data.bottom = new FormAttachment (100, 0);
 
-
         FormData button2Data = new FormData ();
         button2Data.left = new FormAttachment (sash, 0);
         button2Data.right = new FormAttachment (100, 0);
@@ -83,25 +48,18 @@ public class App {
         button2Data.bottom = new FormAttachment(100, 0);
 
         // browser
-        Browser browser;
-        try {
-            browser = new Browser(shell, SWT.NONE);
-        } catch (SWTError e) {
-            System.out.println("Could not instantiate Browser: " + e.getMessage());
-            display.dispose();
-            return;
-        }
-        browser.setText(basicHtml);
+        final var browser = new Browser(shell, SWT.NONE);
+        final var page = """
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/stackoverflow-light.min.css">
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+          <div id="dc"/>
+        """;
+        browser.setText(page);
         browser.setLayoutData (button2Data);
 
-        // text-multiline
+        // text
         Text text = new Text(shell, SWT.MULTI | SWT.BORDER);
-        text.addModifyListener(e -> {
-            var newHtml = renderHtml(text.getText());
-            updateContent(browser, newHtml);
-            //browser.setText(renderHtml(text.getText()));
-
-        });
+        text.addModifyListener(e -> browser.execute(MdRenderer.makeJsFromMd(text.getText())));
         text.setLayoutData(button1Data);
 
         shell.pack ();
@@ -110,34 +68,5 @@ public class App {
             if (!display.readAndDispatch ()) display.sleep ();
         }
         display.dispose ();
-    }
-
-    private static void updateContent(Browser browser, String newContentHtml) {
-        //String newContentHtml = getDynamicContentHtml(false); // Get content without highlight
-        // Escape single quotes for JavaScript string literal
-        String escapedContent = newContentHtml.replace("`", "\\`");
-
-        // Construct the JavaScript to update the innerHTML of the div
-        String js = "document.getElementById('dynamicContent').innerHTML = `" + escapedContent + "`;";
-        System.out.println(js);
-
-        // Execute the JavaScript in the browser context
-        js += """
-                document.querySelectorAll('pre code').forEach((block) => {
-                    hljs.highlightElement(block);
-                  });
-                """;
-        browser.execute(js);
-    }
-
-    public static String renderHtml(String s) {
-        MutableDataSet options = new MutableDataSet();
-        options.set(Parser.EXTENSIONS, Arrays.asList(TablesExtension.create(), StrikethroughExtension.create()));
-
-        Parser parser = Parser.builder(options).build();
-        HtmlRenderer renderer = HtmlRenderer.builder(options).build();
-        final var html = renderer.render(parser.parse(s));
-
-        return html;
     }
 }
